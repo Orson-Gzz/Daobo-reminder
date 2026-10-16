@@ -4,7 +4,6 @@ import { useStore, useUI } from '../store';
 import { Menu } from './Menu';
 import { Tabs } from './Tabs';
 import { IconButton } from './ui';
-import { ViewSwitch } from './ViewSwitch';
 
 export function Header() {
   const searchOpen = useUI((s) => s.searchOpen);
@@ -37,12 +36,9 @@ export function Header() {
             </IconButton>
           </div>
         ) : (
-          <>
-            <ViewSwitch />
-            <IconButton label="Search (/)" onClick={openSearch}>
-              <Search size={18} />
-            </IconButton>
-          </>
+          <IconButton label="Search (/)" onClick={openSearch}>
+            <Search size={18} />
+          </IconButton>
         )}
         <Menu />
       </div>

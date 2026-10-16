@@ -124,8 +124,26 @@ kbd {
 /* Layout */
 
 .app {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  min-height: 100vh;
+  margin: 0;
+  max-width: none;
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: max(28px, env(safe-area-inset-top)) 20px 24px 24px;
+  border-right: 1px solid var(--border);
+}
+
+.workspace {
+  width: 100%;
+  min-width: 0;
   max-width: 640px;
-  margin: 0 auto;
+  margin-inline: auto;
   padding: 0 16px calc(96px + env(safe-area-inset-bottom));
 }
 
@@ -140,6 +158,7 @@ kbd {
 .header-top {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 4px;
   min-height: 40px;
 }
@@ -147,9 +166,10 @@ kbd {
 /* View switch (Reminders · Calendar) */
 
 .view-switch {
-  flex: 1;
   display: flex;
-  gap: 14px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
   min-width: 0;
 }
 
@@ -169,7 +189,7 @@ kbd {
   color: var(--text);
 }
 
-.app.wide {
+.app.wide .workspace {
   max-width: 1120px;
 }
 
@@ -1282,12 +1302,21 @@ kbd {
     width: min(300px, calc(100vw - 32px));
   }
 
+  .app {
+    grid-template-columns: 112px minmax(0, 1fr);
+  }
+
+  .sidebar {
+    padding-right: 10px;
+    padding-left: 12px;
+  }
+
   .view-switch {
-    gap: 12px;
+    gap: 8px;
   }
 
   .view-switch button {
-    font-size: 20px;
+    font-size: 16px;
   }
 
   .cal-title {

@@ -6,6 +6,7 @@ import { ImportDialog, ShortcutsHelp } from './components/Dialogs';
 import { QuickAdd } from './components/QuickAdd';
 import { Toast } from './components/Toast';
 import { cx } from './components/ui';
+import { ViewSwitch } from './components/ViewSwitch';
 import { useClock, useDocumentState, useStorageSync } from './hooks/useAppSync';
 import { useNotifications } from './hooks/useNotifications';
 import { useShortcuts } from './hooks/useShortcuts';
@@ -23,23 +24,28 @@ export default function App() {
   return (
     <DragLayer>
       <div className={cx('app', view === 'calendar' && 'wide')}>
-        <Header />
-        {view === 'calendar' ? (
-          <main>
-            <CalendarView />
-          </main>
-        ) : (
-          <main id="panel" role="tabpanel" aria-labelledby={`tab-${tab}`}>
-            {tab === 'done' ? (
-              <CompletedList />
-            ) : (
-              <>
-                <QuickAdd key={tab} section={tab} />
-                <ReminderList section={tab} />
-              </>
-            )}
-          </main>
-        )}
+        <aside className="sidebar">
+          <ViewSwitch />
+        </aside>
+        <div className="workspace">
+          <Header />
+          {view === 'calendar' ? (
+            <main>
+              <CalendarView />
+            </main>
+          ) : (
+            <main id="panel" role="tabpanel" aria-labelledby={`tab-${tab}`}>
+              {tab === 'done' ? (
+                <CompletedList />
+              ) : (
+                <>
+                  <QuickAdd key={tab} section={tab} />
+                  <ReminderList section={tab} />
+                </>
+              )}
+            </main>
+          )}
+        </div>
       </div>
       <Toast />
       <ShortcutsHelp />
