@@ -17,11 +17,11 @@ To install it as an app, open the production build (`npm run preview`, or any st
 ## Features
 
 - **Sections:** move items between To-do and Awaiting Reply with the hourglass button, `W`, or by dragging onto a tab. Check an item off to complete it. Uncheck it in Completed to send it back where it came from.
-- **Details** (click an item): notes, due/follow-up date and time with quick presets (In 1 hour, This evening, Tomorrow, Next week), priority, repeat, and who you're waiting on.
+- **Details** (click an item): notes, due/follow-up date and time with quick presets behind a **Shortcuts** button (In 1 hour, This evening, Tomorrow, Next week), priority, repeat, and who you're waiting on.
 - **Quick add:** in Awaiting Reply, `Quote for roof @Dana` records Dana as who you're waiting on.
 - **Repeating items** stay in place with their next date when completed, and a copy is logged in Completed.
 - **Undo** for complete, move, delete, clear, and import (toast button or `⌘Z`).
-- **Search** across all sections. **Sort** each section manually (drag), by due date, or by priority.
+- **Search** across all sections. **Priority zones**: To-do and Awaiting Reply are split into !!! / !! / ! / None zones; fold any zone, or drag an item into another zone to change its priority. **Sort** within each zone manually (drag) or by due date.
 - **Notifications** at due time, opt-in from the ⋯ menu. All-day items alert at 9:00. The overdue count shows in the tab title and the installed app's badge. Without a push server, alerts fire only while the app or tab is open (it can be in the background).
 - **Backup:** export and import JSON (merge or replace). Changes sync live between open tabs.
 - **Theme:** auto, light, or dark.
@@ -48,7 +48,7 @@ Click **Calendar** in the header (or press `C`) to switch views. The app remembe
 | `Enter` | Open / close details |
 | `X` | Complete / restore |
 | `W` | Toggle Awaiting Reply |
-| `⌥↑` / `⌥↓` | Reorder (manual sort) |
+| `⌥↑` / `⌥↓` | Reorder within a zone (manual sort) |
 | `Delete` | Delete |
 | `Esc` | Close / deselect |
 | `?` | Show shortcuts |

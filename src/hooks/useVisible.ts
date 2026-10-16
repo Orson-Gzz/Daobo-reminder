@@ -1,17 +1,33 @@
 import { useMemo } from 'react';
 import { agendaFor, calendarReminders } from '../lib/calendar';
-import { visibleReminders } from '../lib/sort';
+import { matchesQuery, priorityZones, visibleReminders } from '../lib/sort';
 import { useStore, useUI } from '../store';
-import type { Status } from '../types';
+import type { OpenStatus, Status } from '../types';
 
 export function useVisible(section: Status) {
   const reminders = useStore((s) => s.reminders);
   const sort = useStore((s) => s.settings.sort);
+  const collapsed = useStore((s) => s.settings.collapsedZones);
   const query = useUI((s) => s.query);
   const now = useUI((s) => s.now);
   return useMemo(
-    () => visibleReminders(reminders, section, query, sort, now),
-    [reminders, section, query, sort, now],
+    () => visibleReminders(reminders, section, query, sort, now, collapsed),
+    [reminders, section, query, sort, now, collapsed],
+  );
+}
+
+/** All four priority zones of a section (search applied, collapsed ones included). */
+export function useZones(section: OpenStatus) {
+  const reminders = useStore((s) => s.reminders);
+  const mode = useStore((s) => s.settings.sort[section]);
+  const query = useUI((s) => s.query);
+  return useMemo(
+    () =>
+      priorityZones(
+        reminders.filter((r) => r.status === section && matchesQuery(r, query)),
+        mode,
+      ),
+    [reminders, section, query, mode],
   );
 }
 
@@ -19,7 +35,7 @@ export function useVisible(section: Status) {
 export function getVisible(section: Status) {
   const { reminders, settings } = useStore.getState();
   const { query, now } = useUI.getState();
-  return visibleReminders(reminders, section, query, settings.sort, now);
+  return visibleReminders(reminders, section, query, settings.sort, now, settings.collapsedZones);
 }
 
 /** Open reminders shown in the calendar (section toggles + search applied). */

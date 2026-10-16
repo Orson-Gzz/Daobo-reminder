@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { parseCalendarAdd, parseQuickAdd, rescheduleReminder } from './actions';
+import { parseCalendarAdd, parseQuickAdd, rescheduleReminder, setPriority } from './actions';
 import { collectDue } from './hooks/useNotifications';
 import { visibleReminders } from './lib/sort';
 import { useStore, useUI } from './store';
@@ -25,6 +25,34 @@ describe('add', () => {
     const waiting = s().reminders.find((r) => r.status === 'waiting')!;
     expect(waiting.waitingOn).toBe('Alice');
     expect(waiting.waitingSince).not.toBeNull();
+  });
+});
+
+describe('setPriority', () => {
+  it('moves an item into another zone at a given spot, with undo', () => {
+    const c = s().add({ title: 'C', status: 'todo' });
+    const b = s().add({ title: 'B', status: 'todo' });
+    const a = s().add({ title: 'A', status: 'todo' });
+    s().update(b.id, { priority: 3 });
+    s().update(c.id, { priority: 3 });
+    expect(titles('todo')).toEqual(['B', 'C', 'A']);
+
+    // Dragged up onto B in the High zone: takes B's spot.
+    setPriority(a.id, 3, b.id);
+    expect(byId(a.id).priority).toBe(3);
+    expect(titles('todo')).toEqual(['A', 'B', 'C']);
+    expect(useUI.getState().toast?.message).toBe('Priority: High');
+
+    useUI.getState().toast!.undo!();
+    expect(byId(a.id).priority).toBe(0);
+    expect(titles('todo')).toEqual(['B', 'C', 'A']);
+  });
+
+  it('ignores completed items', () => {
+    const r = s().add({ title: 'Done', status: 'todo' });
+    s().complete(r.id);
+    setPriority(r.id, 2);
+    expect(byId(r.id).priority).toBe(0);
   });
 });
 

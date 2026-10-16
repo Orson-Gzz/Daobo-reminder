@@ -48,10 +48,12 @@ function nudgeSelected(delta: number) {
   const { tab, selectedId } = useUI.getState();
   if (inCalendar() || tab === 'done' || !selectedId) return;
   if (useStore.getState().settings.sort[tab] !== 'manual') return;
-  const ids = getVisible(tab).map((r) => r.id);
+  const list = getVisible(tab);
+  const ids = list.map((r) => r.id);
   const i = ids.indexOf(selectedId);
   const j = i + delta;
-  if (i === -1 || j < 0 || j >= ids.length) return;
+  // Stay inside the item's priority zone.
+  if (i === -1 || j < 0 || j >= ids.length || list[i].priority !== list[j].priority) return;
   [ids[i], ids[j]] = [ids[j], ids[i]];
   useStore.getState().reorder(ids);
   scrollToSelected();

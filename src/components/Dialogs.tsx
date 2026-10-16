@@ -38,7 +38,7 @@ const SHORTCUTS: [string[], string][] = [
   [['Enter'], 'Open / close details'],
   [['X'], 'Complete / restore'],
   [['W'], 'Toggle Awaiting Reply'],
-  [['⌥', '↑ ↓'], 'List: reorder (manual sort)'],
+  [['⌥', '↑ ↓'], 'List: reorder within a zone (manual sort)'],
   [['Del'], 'Delete'],
   [['⌘', 'Z'], 'Undo'],
   [['Esc'], 'Close / deselect'],

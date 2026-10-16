@@ -2,7 +2,8 @@ export type Status = 'todo' | 'waiting' | 'done';
 export type OpenStatus = Exclude<Status, 'done'>;
 export type Priority = 0 | 1 | 2 | 3;
 export type Repeat = 'none' | 'daily' | 'weekdays' | 'weekly' | 'monthly' | 'yearly';
-export type SortMode = 'manual' | 'due' | 'priority';
+/** Applied within each priority zone. */
+export type SortMode = 'manual' | 'due';
 export type Theme = 'system' | 'light' | 'dark';
 export type View = 'list' | 'calendar';
 /** 0 = Sunday, 1 = Monday. */
@@ -40,6 +41,8 @@ export interface Settings {
   weekStart: WeekStart;
   /** Which sections appear in the calendar. */
   calendarShow: Record<OpenStatus, boolean>;
+  /** Priority zones folded away in each list section. */
+  collapsedZones: Record<OpenStatus, Priority[]>;
 }
 
 export const SECTIONS: Status[] = ['todo', 'waiting', 'done'];
@@ -48,6 +51,13 @@ export const SECTION_NAME: Record<Status, string> = {
   todo: 'To-do',
   waiting: 'Awaiting Reply',
   done: 'Completed',
+};
+
+export const PRIORITY_NAME: Record<Priority, string> = {
+  0: 'None',
+  1: 'Low',
+  2: 'Medium',
+  3: 'High',
 };
 
 export const REPEAT_LABELS: Record<Repeat, string> = {

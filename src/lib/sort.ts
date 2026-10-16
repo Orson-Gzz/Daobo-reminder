@@ -1,5 +1,5 @@
 import { differenceInCalendarDays } from 'date-fns';
-import type { Reminder, SortMode, Status } from '../types';
+import type { OpenStatus, Priority, Reminder, SortMode, Status } from '../types';
 import { dueSortKey } from './dates';
 
 export function matchesQuery(r: Reminder, query: string): boolean {
@@ -22,9 +22,24 @@ export function sortReminders(list: Reminder[], mode: SortMode): Reminder[] {
       return sorted.sort(byOrder);
     case 'due':
       return sorted.sort((a, b) => byDue(a, b) || byOrder(a, b));
-    case 'priority':
-      return sorted.sort((a, b) => b.priority - a.priority || byDue(a, b) || byOrder(a, b));
   }
+}
+
+/** List sections are split into these zones, top to bottom. */
+export const PRIORITY_ZONES: Priority[] = [3, 2, 1, 0];
+
+export interface PriorityZone {
+  priority: Priority;
+  items: Reminder[];
+}
+
+/** All four zones (empty ones included), each sorted by `mode`. */
+export function priorityZones(list: Reminder[], mode: SortMode): PriorityZone[] {
+  const sorted = sortReminders(list, mode);
+  return PRIORITY_ZONES.map((priority) => ({
+    priority,
+    items: sorted.filter((r) => r.priority === priority),
+  }));
 }
 
 const byCompletedDesc = (a: Reminder, b: Reminder) =>
@@ -50,15 +65,19 @@ export function groupCompleted(list: Reminder[], now = Date.now()): CompletedGro
   return groups.filter((g) => g.items.length > 0);
 }
 
-/** Reminders shown in a section, in display order. */
+/** Reminders shown in a section, in display order. Collapsed zones are skipped unless searching. */
 export function visibleReminders(
   reminders: Reminder[],
   section: Status,
   query: string,
-  sort: Record<'todo' | 'waiting', SortMode>,
+  sort: Record<OpenStatus, SortMode>,
   now = Date.now(),
+  collapsed?: Record<OpenStatus, Priority[]>,
 ): Reminder[] {
   const list = reminders.filter((r) => r.status === section && matchesQuery(r, query));
   if (section === 'done') return groupCompleted(list, now).flatMap((g) => g.items);
-  return sortReminders(list, sort[section]);
+  const hidden = query.trim() ? [] : (collapsed?.[section] ?? []);
+  return priorityZones(list, sort[section])
+    .filter((z) => !hidden.includes(z.priority))
+    .flatMap((z) => z.items);
 }
