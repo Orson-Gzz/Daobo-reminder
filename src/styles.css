@@ -221,8 +221,25 @@ kbd {
   box-shadow: var(--shadow);
 }
 
+/* While open, a plain layer fades in over the dot grid (the rail itself keeps the dots). */
+.nav::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--bg);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.nav.open::before {
+  opacity: 1;
+}
+
 .nav-main,
 .nav-foot {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 2px;
