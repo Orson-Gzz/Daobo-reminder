@@ -5,14 +5,14 @@ import { memo, useEffect, useState, type ReactNode } from 'react';
 import { deleteReminder, moveReminder, toggleDone } from '../actions';
 import { formatAge, formatDue, formatTimestamp, isDueToday, isOverdue } from '../lib/dates';
 import { useStore, useUI } from '../store';
-import { SECTION_NAME, type Reminder } from '../types';
+import { PRIORITY_NAME, SECTION_NAME, type Priority as PriorityLevel, type Reminder } from '../types';
 import { ReminderEditor } from './ReminderEditor';
 import { cx, IconButton } from './ui';
 
-export function Priority({ level }: { level: number }) {
+export function Priority({ level }: { level: PriorityLevel }) {
   if (!level) return null;
   return (
-    <span className={cx('priority', `p${level}`)} aria-label={['', 'Low', 'Medium', 'High'][level] + ' priority'}>
+    <span className={cx('priority', `p${level}`)} aria-label={`${PRIORITY_NAME[level]} priority`}>
       {'!'.repeat(level)}
     </span>
   );

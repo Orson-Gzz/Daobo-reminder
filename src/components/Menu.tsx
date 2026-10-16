@@ -10,7 +10,6 @@ import { IconButton, Segmented } from './ui';
 const SORT_OPTIONS: { value: SortMode; label: string }[] = [
   { value: 'manual', label: 'Manual' },
   { value: 'due', label: 'Due date' },
-  { value: 'priority', label: 'Priority' },
 ];
 
 const WEEK_START_OPTIONS: { value: WeekStart; label: string }[] = [

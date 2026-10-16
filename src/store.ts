@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { normalizeList } from './lib/backup';
 import { nextOccurrence, parseDateKey, toDateKey } from './lib/dates';
-import type { OpenStatus, Reminder, Settings, SortMode, Status, View } from './types';
+import type { OpenStatus, Priority, Reminder, Settings, SortMode, Status, View } from './types';
 
 export type Undo = () => void;
 
@@ -16,6 +16,13 @@ const DEFAULT_SETTINGS: Settings = {
   view: 'list',
   weekStart: 1,
   calendarShow: { todo: true, waiting: true },
+  collapsedZones: { todo: [], waiting: [] },
+};
+
+/** Older saves may still use the removed "priority" sort; zones already group by priority. */
+const normalizeSort = (sort?: Partial<Record<OpenStatus, string>>): Record<OpenStatus, SortMode> => {
+  const pick = (mode?: string): SortMode => (mode === 'due' || mode === 'priority' ? 'due' : 'manual');
+  return { todo: pick(sort?.todo), waiting: pick(sort?.waiting) };
 };
 
 interface ReminderState {
@@ -38,6 +45,7 @@ interface ReminderState {
   revert: (prev: Reminder[], added?: string[]) => void;
   setSettings: (patch: Partial<Settings>) => void;
   setSort: (section: OpenStatus, mode: SortMode) => void;
+  toggleZone: (section: OpenStatus, priority: Priority) => void;
 }
 
 const nowIso = () => new Date().toISOString();
@@ -213,6 +221,16 @@ export const useStore = create<ReminderState>()(
           set((s) => ({
             settings: { ...s.settings, sort: { ...s.settings.sort, [section]: mode } },
           })),
+        toggleZone: (section, priority) =>
+          set((s) => {
+            const current = s.settings.collapsedZones[section];
+            const next = current.includes(priority)
+              ? current.filter((p) => p !== priority)
+              : [...current, priority];
+            return {
+              settings: { ...s.settings, collapsedZones: { ...s.settings.collapsedZones, [section]: next } },
+            };
+          }),
       };
     },
     {
@@ -227,8 +245,9 @@ export const useStore = create<ReminderState>()(
           settings: {
             ...DEFAULT_SETTINGS,
             ...p.settings,
-            sort: { ...DEFAULT_SETTINGS.sort, ...p.settings?.sort },
+            sort: normalizeSort(p.settings?.sort),
             calendarShow: { ...DEFAULT_SETTINGS.calendarShow, ...p.settings?.calendarShow },
+            collapsedZones: { ...DEFAULT_SETTINGS.collapsedZones, ...p.settings?.collapsedZones },
           },
         };
       },
@@ -289,6 +308,12 @@ export function setTab(tab: Status) {
   useUI.setState({ tab, expandedId: null, selectedId: null });
 }
 
+/** Unfold a priority zone so an item in it can be seen. */
+export function expandZone(section: OpenStatus, priority: Priority) {
+  const { settings, toggleZone } = useStore.getState();
+  if (settings.collapsedZones[section].includes(priority)) toggleZone(section, priority);
+}
+
 export function selectDate(dateKey: string) {
   if (useUI.getState().selectedDate === dateKey) return;
   useUI.setState({ selectedDate: dateKey, expandedId: null, selectedId: null });
@@ -309,6 +334,7 @@ export function openReminder(id: string) {
   const r = useStore.getState().reminders.find((x) => x.id === id);
   if (!r) return;
   const ui = { query: '', searchOpen: false, expandedId: id, selectedId: id };
+  if (r.status !== 'done') expandZone(r.status, r.priority);
   if (useStore.getState().settings.view === 'calendar' && r.dueDate && r.status !== 'done') {
     useUI.setState({ ...ui, selectedDate: r.dueDate });
   } else {

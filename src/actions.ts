@@ -1,9 +1,11 @@
 // User-facing actions shared by buttons, drag-and-drop, and keyboard shortcuts.
 // Each wraps a store action and surfaces an undoable toast.
+import { arrayMove } from '@dnd-kit/sortable';
 import { format } from 'date-fns';
+import { getVisible } from './hooks/useVisible';
 import { formatDue, parseDateKey } from './lib/dates';
 import { showToast, useStore, useUI } from './store';
-import { SECTION_NAME, type OpenStatus, type Status } from './types';
+import { PRIORITY_NAME, SECTION_NAME, type OpenStatus, type Priority, type Status } from './types';
 
 const get = () => useStore.getState();
 const quote = (title: string) => `“${title.length > 40 ? `${title.slice(0, 39)}…` : title}”`;
@@ -79,6 +81,23 @@ export function rescheduleReminder(id: string, dateKey: string | null) {
     ? `Moved to ${format(parseDateKey(dateKey), 'EEE, MMM d')}`
     : `Date cleared for ${quote(r.title)}`;
   showToast(message, () => get().revert([r]));
+}
+
+/** Drop target handler: a priority zone. `placeAt` puts it at that row's spot (manual sort). */
+export function setPriority(id: string, priority: Priority, placeAt?: string) {
+  const r = get().reminders.find((x) => x.id === id);
+  if (!r || r.status === 'done' || r.priority === priority) return;
+  // Reordering touches the whole section, so undo restores all of it.
+  const before = get().reminders.filter((x) => x.status === r.status);
+  if (placeAt) {
+    // Move within the list as shown during the drag, so it lands where the preview put it.
+    const ids = getVisible(r.status).map((x) => x.id);
+    const from = ids.indexOf(id);
+    const to = ids.indexOf(placeAt);
+    if (from !== -1 && to !== -1) get().reorder(arrayMove(ids, from, to));
+  }
+  get().update(id, { priority });
+  showToast(`Priority: ${PRIORITY_NAME[priority]}`, () => get().revert(before));
 }
 
 const WHO_RE = /^(.*\S)\s+@(\S.*)$/;

@@ -3,7 +3,7 @@ import { Plus } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { parseCalendarAdd, parseQuickAdd } from '../actions';
 import { parseDateKey } from '../lib/dates';
-import { useStore, useUI } from '../store';
+import { expandZone, useStore, useUI } from '../store';
 import type { OpenStatus } from '../types';
 
 const PLACEHOLDER: Record<OpenStatus, string> = {
@@ -24,6 +24,8 @@ export function QuickAdd({ section, dueDate }: Props) {
       : { ...parseQuickAdd(text, section!), status: section! };
     if (!parsed.title) return;
     useStore.getState().add({ ...parsed, dueDate: dueDate ?? null });
+    // New items land in the None zone; unfold it so they show.
+    if (section) expandZone(section, 0);
     setText('');
     // A new item could be hidden by an active search; clear it so the item shows.
     if (useUI.getState().query) useUI.setState({ query: '', searchOpen: false });

@@ -1,21 +1,33 @@
-import { CornerUpLeft, Hourglass, RotateCcw, Trash2 } from 'lucide-react';
+import { CornerUpLeft, Hourglass, RotateCcw, Trash2, Zap } from 'lucide-react';
+import { useState } from 'react';
 import { deleteReminder, moveReminder, restoreReminder } from '../actions';
 import { DUE_PRESETS, formatTimestamp } from '../lib/dates';
-import { useStore, useUI } from '../store';
-import { REPEAT_LABELS, type Priority, type Reminder, type Repeat } from '../types';
-import { Segmented } from './ui';
+import { expandZone, useStore, useUI } from '../store';
+import { PRIORITY_NAME, REPEAT_LABELS, type Priority, type Reminder, type Repeat } from '../types';
+import { cx, Segmented } from './ui';
 
 const PRIORITY_OPTIONS: { value: Priority; label: string; title: string }[] = [
   { value: 0, label: 'None', title: 'No priority' },
-  { value: 1, label: '!', title: 'Low' },
-  { value: 2, label: '!!', title: 'Medium' },
-  { value: 3, label: '!!!', title: 'High' },
+  { value: 1, label: '!', title: PRIORITY_NAME[1] },
+  { value: 2, label: '!!', title: PRIORITY_NAME[2] },
+  { value: 3, label: '!!!', title: PRIORITY_NAME[3] },
 ];
 
 export function ReminderEditor({ reminder: r }: { reminder: Reminder }) {
   const update = (patch: Partial<Reminder>) => useStore.getState().update(r.id, patch);
   const now = useUI((s) => s.now);
   const isWaiting = r.status === 'waiting' || (r.status === 'done' && r.prevStatus === 'waiting');
+  const [presetsOpen, setPresetsOpen] = useState(false);
+  const presetsId = `presets-${r.id}`;
+  const applyPreset = (patch: Partial<Reminder>) => {
+    update(patch);
+    setPresetsOpen(false);
+  };
+  const setPriority = (priority: Priority) => {
+    update({ priority });
+    // Keep the open item in view if its new zone was folded.
+    if (r.status !== 'done') expandZone(r.status, priority);
+  };
 
   return (
     <div className="editor">
@@ -55,24 +67,35 @@ export function ReminderEditor({ reminder: r }: { reminder: Reminder }) {
             disabled={!r.dueDate}
             onChange={(e) => update({ dueTime: e.target.value || null })}
           />
+          <button
+            type="button"
+            className={cx('chip', 'presets-toggle')}
+            aria-expanded={presetsOpen}
+            aria-controls={presetsId}
+            onClick={() => setPresetsOpen(!presetsOpen)}
+          >
+            <Zap size={13} aria-hidden /> Shortcuts
+          </button>
         </div>
       </div>
-      <div className="presets">
-        {DUE_PRESETS.map((p) => (
-          <button key={p.label} type="button" className="chip" onClick={() => update(p.get(new Date()))}>
-            {p.label}
-          </button>
-        ))}
-        {r.dueDate && (
-          <button type="button" className="chip" onClick={() => update({ dueDate: null })}>
-            Clear
-          </button>
-        )}
-      </div>
+      {presetsOpen && (
+        <div className="presets" id={presetsId}>
+          {DUE_PRESETS.map((p) => (
+            <button key={p.label} type="button" className="chip" onClick={() => applyPreset(p.get(new Date()))}>
+              {p.label}
+            </button>
+          ))}
+          {r.dueDate && (
+            <button type="button" className="chip" onClick={() => applyPreset({ dueDate: null })}>
+              Clear
+            </button>
+          )}
+        </div>
+      )}
 
       <div className="field">
         <span>Priority</span>
-        <Segmented label="Priority" value={r.priority} options={PRIORITY_OPTIONS} onChange={(priority) => update({ priority })} />
+        <Segmented label="Priority" value={r.priority} options={PRIORITY_OPTIONS} onChange={setPriority} />
       </div>
 
       <label className="field">

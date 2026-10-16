@@ -14,6 +14,7 @@ beforeEach(() => {
     notifications: false,
     view: 'list',
     calendarShow: { todo: true, waiting: true },
+    collapsedZones: { todo: [], waiting: [] },
   });
   useUI.setState({
     tab: 'todo',
@@ -85,13 +86,45 @@ describe('App', () => {
 
     await user.type(screen.getByLabelText('Notes'), 'Bring insurance card');
     await user.click(screen.getByRole('button', { name: '!!!' }));
+    // Due shortcuts stay hidden until asked for, and fold away once used.
+    expect(screen.queryByRole('button', { name: 'Tomorrow' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Shortcuts' }));
     await user.click(screen.getByRole('button', { name: 'Tomorrow' }));
+    expect(screen.queryByRole('button', { name: 'Tomorrow' })).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Close' }));
 
     const r = useStore.getState().reminders[0];
     expect(r).toMatchObject({ notes: 'Bring insurance card', priority: 3, dueTime: '09:00' });
     expect(within(list()).getByText(/Tomorrow 9:00 AM/)).toBeInTheDocument();
     expect(within(list()).getByText('Bring insurance card')).toBeInTheDocument();
+  });
+
+  it('groups reminders into collapsible priority zones', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    const zone = (name: string) => within(list()).getByRole('region', { name });
+
+    await user.type(screen.getByLabelText('Add to To-do'), 'Taxes{Enter}Laundry{Enter}');
+    expect(within(zone('No priority')).getByText('Taxes')).toBeInTheDocument();
+    expect(within(zone('High priority')).getByText('Nothing here')).toBeInTheDocument();
+
+    await user.click(within(list()).getByText('Taxes'));
+    await user.click(screen.getByRole('button', { name: '!!!' }));
+    await user.click(screen.getByRole('button', { name: 'Close' }));
+    expect(within(zone('High priority')).getByText('Taxes')).toBeInTheDocument();
+    expect(within(zone('No priority')).queryByText('Taxes')).not.toBeInTheDocument();
+
+    // Folding a zone hides its rows but keeps the count.
+    const noneHead = within(zone('No priority')).getByRole('button', { expanded: true });
+    await user.click(noneHead);
+    expect(noneHead).toHaveAttribute('aria-expanded', 'false');
+    expect(within(list()).queryByText('Laundry')).not.toBeInTheDocument();
+    expect(within(noneHead).getByText('1')).toBeInTheDocument();
+    expect(useStore.getState().settings.collapsedZones.todo).toEqual([0]);
+
+    // Adding a reminder unfolds the None zone again.
+    await user.type(screen.getByLabelText('Add to To-do'), 'Groceries{Enter}');
+    expect(within(zone('No priority')).getByText('Laundry')).toBeInTheDocument();
   });
 
   it('searches across sections and supports keyboard shortcuts', async () => {

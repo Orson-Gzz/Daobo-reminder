@@ -13,20 +13,21 @@ import {
 } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import { useState, type ReactNode } from 'react';
-import { rescheduleReminder, sendToSection } from '../actions';
+import { rescheduleReminder, sendToSection, setPriority } from '../actions';
 import { getVisible } from '../hooks/useVisible';
 import { DAY_DROP_PREFIX, NO_DATE_DROP_ID } from '../lib/calendar';
 import { useStore, useUI } from '../store';
-import type { Status } from '../types';
+import type { Priority as PriorityLevel, Status } from '../types';
 import { ChipLabel } from './MonthGrid';
 import { Meta, Priority } from './ReminderItem';
+import { ZONE_DROP_PREFIX } from './ReminderList';
 import { TAB_DROP_PREFIX } from './Tabs';
 import { cx } from './ui';
 
-/** Section tabs, calendar days and the No-date tray. */
+/** Section tabs, priority zone headers, calendar days and the No-date tray. */
 const isZone = (id: string | number) => {
   const key = String(id);
-  return key.startsWith(TAB_DROP_PREFIX) || key.startsWith(DAY_DROP_PREFIX);
+  return key.startsWith(TAB_DROP_PREFIX) || key.startsWith(ZONE_DROP_PREFIX) || key.startsWith(DAY_DROP_PREFIX);
 };
 
 /** Drop zones win whenever the pointer is over one; otherwise snap to the nearest row. */
@@ -102,8 +103,25 @@ export function DragLayer({ children }: { children: ReactNode }) {
       return;
     }
 
-    if (id === overId || !active.data.current?.sortable) return;
-    const ids = getVisible(useUI.getState().tab).map((r) => r.id);
+    if (overId.startsWith(ZONE_DROP_PREFIX)) {
+      setPriority(id, Number(overId.slice(ZONE_DROP_PREFIX.length)) as PriorityLevel);
+      return;
+    }
+
+    if (id === overId) return;
+    const sortable = !!active.data.current?.sortable;
+    // Dropped on a row in another zone: take that zone's priority (and that spot, if manual).
+    const { reminders, settings } = useStore.getState();
+    const r = reminders.find((x) => x.id === id);
+    const target = reminders.find((x) => x.id === overId);
+    const inList = settings.view === 'list' && r?.status !== 'done';
+    if (inList && r && target && target.status === r.status && target.priority !== r.priority) {
+      setPriority(id, target.priority, sortable ? overId : undefined);
+      return;
+    }
+
+    if (!sortable) return;
+    const ids = getVisible(useUI.getState().tab).map((x) => x.id);
     const from = ids.indexOf(id);
     const to = ids.indexOf(overId);
     if (from !== -1 && to !== -1) useStore.getState().reorder(arrayMove(ids, from, to));
