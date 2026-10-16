@@ -1,8 +1,8 @@
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext } from '@dnd-kit/sortable';
-import { ChevronRight } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useCalendarReminders } from '../hooks/useVisible';
+import { ChevronRightIcon } from '../icons';
 import { NO_DATE_DROP_ID, unscheduled } from '../lib/calendar';
 import { ReminderItem } from './ReminderItem';
 import { staticStrategy } from './ReminderList';
@@ -23,7 +23,7 @@ export function UnscheduledTray() {
       aria-label="No date"
     >
       <button type="button" className="tray-head" aria-expanded={open} onClick={() => setOpen(!open)}>
-        <ChevronRight size={16} className="tray-caret" aria-hidden />
+        <ChevronRightIcon size={16} className="tray-caret" aria-hidden />
         <span>No date</span>
         <span className="count">{items.length}</span>
         {open && items.length > 0 && <span className="tray-hint">Drag onto a day to schedule</span>}

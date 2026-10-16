@@ -1,5 +1,5 @@
-import { X } from 'lucide-react';
 import { useEffect } from 'react';
+import { XIcon } from '../icons';
 import { useUI } from '../store';
 import { IconButton } from './ui';
 
@@ -35,9 +35,7 @@ export function Toast() {
               Undo
             </button>
           )}
-          <IconButton label="Dismiss" onClick={dismiss}>
-            <X size={14} />
-          </IconButton>
+          <IconButton label="Dismiss" icon={XIcon} size={14} onClick={dismiss} />
         </div>
       )}
     </div>

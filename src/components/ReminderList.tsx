@@ -1,8 +1,8 @@
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, type SortingStrategy } from '@dnd-kit/sortable';
-import { ChevronRight } from 'lucide-react';
 import { useMemo } from 'react';
 import { useVisible, useZones } from '../hooks/useVisible';
+import { ChevronRightIcon } from '../icons';
 import { groupCompleted, type PriorityZone as Zone } from '../lib/sort';
 import { useStore, useUI } from '../store';
 import { PRIORITY_NAME, type OpenStatus } from '../types';
@@ -63,7 +63,7 @@ function PriorityZone({ section, zone: { priority, items }, open, sortable }: Zo
           aria-expanded={open}
           onClick={() => useStore.getState().toggleZone(section, priority)}
         >
-          <ChevronRight size={14} className="zone-caret" aria-hidden />
+          <ChevronRightIcon size={14} className="zone-caret" aria-hidden />
           <Priority level={priority} />
           <span>{name}</span>
           <span className="count">{items.length}</span>

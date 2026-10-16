@@ -189,16 +189,17 @@ describe('calendar', () => {
   const agenda = () => screen.getByRole('region', { name: /^Reminders on/ });
   const tray = () => screen.getByRole('region', { name: 'No date' });
 
-  it('switches views with the title switch and the C key', async () => {
+  it('switches views with the sidebar tiles and the C key', async () => {
     const user = userEvent.setup();
     render(<App />);
     await user.click(screen.getByRole('button', { name: 'Calendar' }));
     expect(useStore.getState().settings.view).toBe('calendar');
-    expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
+    expect(screen.queryByRole('tabpanel')).not.toBeInTheDocument();
+    expect(tab(/To-do/)).toHaveAttribute('aria-selected', 'false');
     expect(grid()).toBeInTheDocument();
 
     await user.keyboard('c');
-    expect(screen.getByRole('tablist')).toBeInTheDocument();
+    expect(screen.getByRole('tabpanel')).toBeInTheDocument();
     await user.keyboard('c');
     expect(grid()).toBeInTheDocument();
 
@@ -206,6 +207,29 @@ describe('calendar', () => {
     await user.keyboard('2');
     expect(useStore.getState().settings.view).toBe('list');
     expect(tab(/Awaiting Reply/)).toHaveAttribute('aria-selected', 'true');
+
+    // So does clicking a section in the sidebar.
+    await user.click(screen.getByRole('button', { name: 'Calendar' }));
+    await user.click(tab(/Completed/));
+    expect(useStore.getState().settings.view).toBe('list');
+    expect(tab(/Completed/)).toHaveAttribute('aria-selected', 'true');
+
+    // The Reminders group returns to the last section.
+    await user.click(screen.getByRole('button', { name: 'Calendar' }));
+    await user.click(screen.getByRole('button', { name: 'Reminders' }));
+    expect(useStore.getState().settings.view).toBe('list');
+    expect(tab(/Completed/)).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('opens settings from the sidebar', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    const settings = screen.getByRole('button', { name: 'Settings' });
+    await user.click(settings);
+    expect(settings).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('dialog', { name: 'Options' })).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog', { name: 'Options' })).not.toBeInTheDocument();
   });
 
   it('shows dated items in the grid and agenda, undated ones in the tray', async () => {

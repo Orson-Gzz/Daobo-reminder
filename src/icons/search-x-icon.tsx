@@ -1,0 +1,149 @@
+// Animated icon from AnimateIcons (https://animateicons.in), MIT, see ./LICENSE.
+// Source: github.com/Avijit07x/animateicons/blob/6f1262f7733bb9fa2cca76fe8a4498dc777d46cf/icons/lucide/search-x-icon.tsx
+import { cx } from '../components/ui';
+import type { Variants } from "motion/react";
+import {
+ LazyMotion,
+ domMin,
+ m,
+ useAnimation,
+ useReducedMotion,
+} from "motion/react";
+import {
+ forwardRef,
+ useCallback,
+ useImperativeHandle,
+ useRef,
+ type HTMLAttributes,
+} from "react";
+export interface SearchXIconHandle {
+ startAnimation: () => void;
+ stopAnimation: () => void;
+}
+
+interface SearchXIconProps extends Omit<
+ HTMLAttributes<HTMLSpanElement>,
+ | "color"
+ | "onDrag"
+ | "onDragStart"
+ | "onDragEnd"
+ | "onAnimationStart"
+ | "onAnimationEnd"
+ | "onAnimationIteration"
+> {
+ size?: number;
+ duration?: number;
+ isAnimated?: boolean;
+ color?: string;
+}
+
+const SearchXIcon = forwardRef<SearchXIconHandle, SearchXIconProps>(
+ (
+  {
+   onMouseEnter,
+   onMouseLeave,
+   className,
+   size = 24,
+   duration = 1,
+   isAnimated = true,
+   color,
+   ...props
+  },
+  ref,
+ ) => {
+  const controls = useAnimation();
+  const reduced = useReducedMotion();
+  const isControlled = useRef(false);
+
+  useImperativeHandle(ref, () => {
+   isControlled.current = true;
+   return {
+    startAnimation: () =>
+     reduced ? controls.start("normal") : controls.start("animate"),
+    stopAnimation: () => controls.start("normal"),
+   };
+  });
+
+  const handleEnter = useCallback(
+   (e?: React.MouseEvent<HTMLSpanElement>) => {
+    if (!isAnimated || reduced) return;
+    if (!isControlled.current) controls.start("animate");
+    else onMouseEnter?.(e as any);
+   },
+   [controls, reduced, isAnimated, onMouseEnter],
+  );
+
+  const handleLeave = useCallback(
+   (e?: React.MouseEvent<HTMLSpanElement>) => {
+    if (!isControlled.current) controls.start("normal");
+    else onMouseLeave?.(e as any);
+   },
+   [controls, onMouseLeave],
+  );
+
+  const lensVariants: Variants = {
+   normal: { scale: 1 },
+   animate: {
+    scale: [1, 1.06, 0.97, 1],
+    transition: {
+     duration: 0.6 * duration,
+     ease: "easeInOut",
+     times: [0, 0.35, 0.7, 1],
+    },
+   },
+  };
+
+  const crossVariants: Variants = {
+   normal: { rotate: 0, scale: 1, transition: { duration: 0 } },
+   animate: {
+    rotate: [0, 90],
+    scale: [1, 1.2, 1],
+    transition: { duration: 0.5 * duration, ease: "easeInOut" },
+   },
+  };
+
+  return (
+   <LazyMotion features={domMin} strict>
+    <m.span
+     className={cx('anim-icon', className)}
+     onMouseEnter={handleEnter}
+     onMouseLeave={handleLeave}
+     {...props}
+     style={{ color, ...props.style }}
+    >
+     <m.svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      animate={controls}
+      initial="normal"
+     >
+      <m.g
+       variants={lensVariants}
+       style={{ transformBox: "view-box", originX: "11px", originY: "11px" }}
+      >
+       <circle cx="11" cy="11" r="8" />
+       <path d="m21 21-4.3-4.3" />
+       <m.g
+        variants={crossVariants}
+        style={{ transformBox: "view-box", originX: "11px", originY: "11px" }}
+       >
+        <path d="m13.5 8.5-5 5" />
+        <path d="m8.5 8.5 5 5" />
+       </m.g>
+      </m.g>
+     </m.svg>
+    </m.span>
+   </LazyMotion>
+  );
+ },
+);
+
+SearchXIcon.displayName = "SearchXIcon";
+export { SearchXIcon };

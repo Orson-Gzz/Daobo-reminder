@@ -1,13 +1,13 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Bell, Check, ChevronUp, CornerUpLeft, Hourglass, Repeat, Trash2 } from 'lucide-react';
 import { memo, useEffect, useState, type ReactNode } from 'react';
 import { deleteReminder, moveReminder, toggleDone } from '../actions';
+import { BellIcon, CheckIcon, ChevronUpIcon, CornerUpLeftIcon, HourglassIcon, RepeatIcon, Trash2Icon } from '../icons';
 import { formatAge, formatDue, formatTimestamp, isDueToday, isOverdue } from '../lib/dates';
 import { useStore, useUI } from '../store';
 import { PRIORITY_NAME, SECTION_NAME, type Priority as PriorityLevel, type Reminder } from '../types';
 import { ReminderEditor } from './ReminderEditor';
-import { cx, IconButton } from './ui';
+import { cx, IconButton, useIconAnimation } from './ui';
 
 export function Priority({ level }: { level: PriorityLevel }) {
   if (!level) return null;
@@ -26,13 +26,17 @@ export function Meta({ r, now }: { r: Reminder; now: number }) {
     const tone = isOverdue(r, now) ? 'overdue' : isDueToday(r, now) ? 'today' : '';
     parts.push(
       <span key="due" className={cx('due', tone)}>
-        {r.status === 'waiting' ? 'Follow up ' : <Bell size={12} aria-hidden />}
+        {r.status === 'waiting' ? 'Follow up ' : <BellIcon size={12} aria-hidden />}
         {formatDue(r, now)}
       </span>,
     );
   }
   if (r.repeat !== 'none') {
-    parts.push(<Repeat key="rep" size={12} aria-label={`Repeats ${r.repeat}`} />);
+    parts.push(
+      <span key="rep" className="repeat">
+        <RepeatIcon size={12} role="img" aria-label={`Repeats ${r.repeat}`} />
+      </span>,
+    );
   }
   if (r.status === 'waiting' || (r.status === 'done' && r.waitingOn)) {
     const who = r.waitingOn ? `from ${r.waitingOn}` : '';
@@ -91,6 +95,7 @@ export const ReminderItem = memo(function ReminderItem({ reminder: r, sortable, 
   const selected = useUI((s) => s.selectedId === r.id);
   const now = useUI((s) => s.now);
   const done = r.status === 'done';
+  const check = useIconAnimation();
 
   const { setNodeRef, listeners, transform, transition, isDragging } = useSortable({
     id: r.id,
@@ -117,8 +122,9 @@ export const ReminderItem = memo(function ReminderItem({ reminder: r, sortable, 
           aria-label={done ? `Restore “${r.title}”` : `Complete “${r.title}”`}
           className={cx('check', r.priority === 3 && 'high')}
           onClick={() => toggleDone(r.id)}
+          {...check.triggers}
         >
-          <Check size={13} strokeWidth={3} aria-hidden />
+          <CheckIcon ref={check.ref} size={13} aria-hidden />
         </button>
 
         {expanded ? (
@@ -142,24 +148,24 @@ export const ReminderItem = memo(function ReminderItem({ reminder: r, sortable, 
 
         <div className="row-actions">
           {expanded ? (
-            <IconButton label="Close" onClick={toggleExpand}>
-              <ChevronUp size={16} />
-            </IconButton>
+            <IconButton label="Close" icon={ChevronUpIcon} onClick={toggleExpand} />
           ) : (
             <>
               {r.status === 'todo' && (
-                <IconButton label="Move to Awaiting Reply (w)" onClick={() => moveReminder(r.id, 'waiting')}>
-                  <Hourglass size={16} />
-                </IconButton>
+                <IconButton
+                  label="Move to Awaiting Reply (w)"
+                  icon={HourglassIcon}
+                  onClick={() => moveReminder(r.id, 'waiting')}
+                />
               )}
               {r.status === 'waiting' && (
-                <IconButton label="Got a reply: move to To-do (w)" onClick={() => moveReminder(r.id, 'todo')}>
-                  <CornerUpLeft size={16} />
-                </IconButton>
+                <IconButton
+                  label="Got a reply: move to To-do (w)"
+                  icon={CornerUpLeftIcon}
+                  onClick={() => moveReminder(r.id, 'todo')}
+                />
               )}
-              <IconButton label="Delete" className="danger" onClick={() => deleteReminder(r.id)}>
-                <Trash2 size={16} />
-              </IconButton>
+              <IconButton label="Delete" icon={Trash2Icon} className="danger" onClick={() => deleteReminder(r.id)} />
             </>
           )}
         </div>

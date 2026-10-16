@@ -4,9 +4,9 @@ import { DragLayer } from './components/DragLayer';
 import { Header } from './components/Header';
 import { ImportDialog, ShortcutsHelp } from './components/Dialogs';
 import { QuickAdd } from './components/QuickAdd';
+import { Sidebar } from './components/Sidebar';
 import { Toast } from './components/Toast';
 import { cx } from './components/ui';
-import { ViewSwitch } from './components/ViewSwitch';
 import { useClock, useDocumentState, useStorageSync } from './hooks/useAppSync';
 import { useNotifications } from './hooks/useNotifications';
 import { useShortcuts } from './hooks/useShortcuts';
@@ -25,7 +25,7 @@ export default function App() {
     <DragLayer>
       <div className={cx('app', view === 'calendar' && 'wide')}>
         <aside className="sidebar">
-          <ViewSwitch />
+          <Sidebar />
         </aside>
         <div className="workspace">
           <Header />

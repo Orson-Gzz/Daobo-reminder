@@ -1,10 +1,10 @@
-import { CornerUpLeft, Hourglass, RotateCcw, Trash2, Zap } from 'lucide-react';
 import { useState } from 'react';
 import { deleteReminder, moveReminder, restoreReminder } from '../actions';
+import { CornerUpLeftIcon, HourglassIcon, RotateCcwIcon, Trash2Icon, ZapIcon } from '../icons';
 import { DUE_PRESETS, formatTimestamp } from '../lib/dates';
 import { expandZone, useStore, useUI } from '../store';
 import { PRIORITY_NAME, REPEAT_LABELS, type Priority, type Reminder, type Repeat } from '../types';
-import { cx, Segmented } from './ui';
+import { cx, Segmented, TextButton, useIconAnimation } from './ui';
 
 const PRIORITY_OPTIONS: { value: Priority; label: string; title: string }[] = [
   { value: 0, label: 'None', title: 'No priority' },
@@ -18,6 +18,7 @@ export function ReminderEditor({ reminder: r }: { reminder: Reminder }) {
   const now = useUI((s) => s.now);
   const isWaiting = r.status === 'waiting' || (r.status === 'done' && r.prevStatus === 'waiting');
   const [presetsOpen, setPresetsOpen] = useState(false);
+  const zap = useIconAnimation();
   const presetsId = `presets-${r.id}`;
   const applyPreset = (patch: Partial<Reminder>) => {
     update(patch);
@@ -73,8 +74,9 @@ export function ReminderEditor({ reminder: r }: { reminder: Reminder }) {
             aria-expanded={presetsOpen}
             aria-controls={presetsId}
             onClick={() => setPresetsOpen(!presetsOpen)}
+            {...zap.triggers}
           >
-            <Zap size={13} aria-hidden /> Shortcuts
+            <ZapIcon ref={zap.ref} size={13} aria-hidden /> Shortcuts
           </button>
         </div>
       </div>
@@ -119,23 +121,23 @@ export function ReminderEditor({ reminder: r }: { reminder: Reminder }) {
         </span>
         <div className="editor-actions">
           {r.status === 'todo' && (
-            <button type="button" className="text-btn" onClick={() => moveReminder(r.id, 'waiting')}>
-              <Hourglass size={14} aria-hidden /> Awaiting reply
-            </button>
+            <TextButton icon={HourglassIcon} onClick={() => moveReminder(r.id, 'waiting')}>
+              Awaiting reply
+            </TextButton>
           )}
           {r.status === 'waiting' && (
-            <button type="button" className="text-btn" onClick={() => moveReminder(r.id, 'todo')}>
-              <CornerUpLeft size={14} aria-hidden /> Move to To-do
-            </button>
+            <TextButton icon={CornerUpLeftIcon} onClick={() => moveReminder(r.id, 'todo')}>
+              Move to To-do
+            </TextButton>
           )}
           {r.status === 'done' && (
-            <button type="button" className="text-btn" onClick={() => restoreReminder(r.id)}>
-              <RotateCcw size={14} aria-hidden /> Restore
-            </button>
+            <TextButton icon={RotateCcwIcon} onClick={() => restoreReminder(r.id)}>
+              Restore
+            </TextButton>
           )}
-          <button type="button" className="text-btn danger" onClick={() => deleteReminder(r.id)}>
-            <Trash2 size={14} aria-hidden /> Delete
-          </button>
+          <TextButton icon={Trash2Icon} className="danger" onClick={() => deleteReminder(r.id)}>
+            Delete
+          </TextButton>
         </div>
       </div>
     </div>

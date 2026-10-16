@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeftIcon, ChevronRightIcon } from '../icons';
 import { parseDateKey } from '../lib/dates';
 import { goToToday, shiftSelectedDate, useStore, useUI } from '../store';
 import { SECTION_NAME, type OpenStatus } from '../types';
@@ -33,15 +33,11 @@ export function CalendarView() {
     <div className="calendar">
       <div className="cal-toolbar">
         <div className="cal-nav">
-          <IconButton label="Previous month ([)" onClick={() => shiftSelectedDate('month', -1)}>
-            <ChevronLeft size={18} />
-          </IconButton>
+          <IconButton label="Previous month ([)" icon={ChevronLeftIcon} size={18} onClick={() => shiftSelectedDate('month', -1)} />
           <h2 className="cal-title" aria-live="polite">
             {format(month, 'MMMM yyyy')}
           </h2>
-          <IconButton label="Next month (])" onClick={() => shiftSelectedDate('month', 1)}>
-            <ChevronRight size={18} />
-          </IconButton>
+          <IconButton label="Next month (])" icon={ChevronRightIcon} size={18} onClick={() => shiftSelectedDate('month', 1)} />
           <button type="button" className="chip" title="Today (T)" onClick={goToToday}>
             Today
           </button>

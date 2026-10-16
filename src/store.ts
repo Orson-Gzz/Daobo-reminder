@@ -268,6 +268,8 @@ interface UIState {
   expandedId: string | null;
   selectedId: string | null;
   menuOpen: boolean;
+  /** Phones: the navigation sheet is open. */
+  navOpen: boolean;
   helpOpen: boolean;
   toast: Toast | null;
   /** Parsed backup waiting for the merge/replace choice. */
@@ -285,6 +287,7 @@ export const useUI = create<UIState>()(() => ({
   expandedId: null,
   selectedId: null,
   menuOpen: false,
+  navOpen: false,
   helpOpen: false,
   toast: null,
   pendingImport: null,

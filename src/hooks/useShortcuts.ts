@@ -67,6 +67,10 @@ function handleEscape(target: HTMLElement) {
     useUI.setState({ helpOpen: false, menuOpen: false });
     return;
   }
+  if (ui.navOpen) {
+    useUI.setState({ navOpen: false });
+    return;
+  }
   if (target.id === 'search') {
     useUI.setState({ searchOpen: false, query: '' });
     return;

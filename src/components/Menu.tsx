@@ -1,11 +1,20 @@
-import { Bell, Download, Keyboard, MoreHorizontal, Trash2, Upload } from 'lucide-react';
-import { useEffect, useRef, type ChangeEvent } from 'react';
+import { useEffect, useRef, type ButtonHTMLAttributes, type ChangeEvent, type ReactNode } from 'react';
 import { clearCompleted } from '../actions';
 import { enableNotifications, notificationsSupported } from '../hooks/useNotifications';
+import {
+  BellIcon,
+  DownloadIcon,
+  KeyboardIcon,
+  SettingsIcon,
+  Trash2Icon,
+  UploadIcon,
+  type AnimatedIcon,
+} from '../icons';
 import { BackupError, downloadBackup, parseBackup } from '../lib/backup';
 import { showToast, useStore, useUI } from '../store';
 import type { SortMode, Theme, WeekStart } from '../types';
-import { IconButton, Segmented } from './ui';
+import { NavItem } from './NavItem';
+import { Segmented, useIconAnimation } from './ui';
 
 const SORT_OPTIONS: { value: SortMode; label: string }[] = [
   { value: 'manual', label: 'Manual' },
@@ -22,6 +31,24 @@ const THEME_OPTIONS: { value: Theme; label: string }[] = [
   { value: 'light', label: 'Light' },
   { value: 'dark', label: 'Dark' },
 ];
+
+interface MenuItemProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  icon: AnimatedIcon;
+  label: string;
+  /** Trailing content: a count, a key hint or a switch. */
+  end?: ReactNode;
+}
+
+function MenuItem({ icon: Icon, label, end, ...rest }: MenuItemProps) {
+  const { ref, triggers } = useIconAnimation();
+  return (
+    <button type="button" className="menu-item" {...triggers} {...rest}>
+      <Icon ref={ref} size={16} aria-hidden />
+      <span className="menu-item-label">{label}</span>
+      {end}
+    </button>
+  );
+}
 
 export function Menu() {
   const open = useUI((s) => s.menuOpen);
@@ -61,14 +88,15 @@ export function Menu() {
 
   return (
     <div className="menu-wrap" ref={wrapRef}>
-      <IconButton
-        label="Menu"
+      <NavItem
+        icon={SettingsIcon}
+        label="Settings"
+        className="nav-settings"
         aria-haspopup="dialog"
         aria-expanded={open}
+        active={open}
         onClick={() => useUI.setState({ menuOpen: !open })}
-      >
-        <MoreHorizontal size={18} />
-      </IconButton>
+      />
       {open && (
         <div className="menu" role="dialog" aria-label="Options">
           {settings.view === 'calendar' ? (
@@ -101,57 +129,42 @@ export function Menu() {
               onChange={(theme) => useStore.getState().setSettings({ theme })}
             />
           </div>
-          <button
-            type="button"
+          <MenuItem
+            icon={BellIcon}
+            label="Notifications"
             role="switch"
             aria-checked={settings.notifications}
-            className="menu-item"
             disabled={!notificationsSupported()}
             onClick={toggleNotifications}
-          >
-            <Bell size={16} aria-hidden />
-            <span>Notifications</span>
-            <span className="switch" aria-hidden />
-          </button>
+            end={<span className="switch" aria-hidden />}
+          />
           <hr />
-          <button
-            type="button"
-            className="menu-item"
+          <MenuItem
+            icon={DownloadIcon}
+            label="Export backup"
             onClick={() => {
               downloadBackup(useStore.getState().reminders);
               close();
             }}
-          >
-            <Download size={16} aria-hidden />
-            <span>Export backup</span>
-          </button>
-          <button type="button" className="menu-item" onClick={() => fileRef.current?.click()}>
-            <Upload size={16} aria-hidden />
-            <span>Import backup…</span>
-          </button>
-          <button
-            type="button"
-            className="menu-item"
+          />
+          <MenuItem icon={UploadIcon} label="Import backup…" onClick={() => fileRef.current?.click()} />
+          <MenuItem
+            icon={Trash2Icon}
+            label="Clear completed"
             disabled={!doneCount}
             onClick={() => {
               clearCompleted();
               close();
             }}
-          >
-            <Trash2 size={16} aria-hidden />
-            <span>Clear completed</span>
-            {doneCount > 0 && <span className="menu-hint">{doneCount}</span>}
-          </button>
+            end={doneCount > 0 && <span className="menu-hint">{doneCount}</span>}
+          />
           <hr />
-          <button
-            type="button"
-            className="menu-item"
-            onClick={() => useUI.setState({ helpOpen: true, menuOpen: false })}
-          >
-            <Keyboard size={16} aria-hidden />
-            <span>Keyboard shortcuts</span>
-            <kbd className="menu-hint">?</kbd>
-          </button>
+          <MenuItem
+            icon={KeyboardIcon}
+            label="Keyboard shortcuts"
+            onClick={() => useUI.setState({ helpOpen: true, menuOpen: false, navOpen: false })}
+            end={<kbd className="menu-hint">?</kbd>}
+          />
           <input
             ref={fileRef}
             type="file"

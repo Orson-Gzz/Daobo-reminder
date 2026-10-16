@@ -16,25 +16,28 @@ To install it as an app, open the production build (`npm run preview`, or any st
 
 ## Features
 
-- **Sections:** move items between To-do and Awaiting Reply with the hourglass button, `W`, or by dragging onto a tab. Check an item off to complete it. Uncheck it in Completed to send it back where it came from.
+- **Sidebar:** **Reminders** (with To-do, Awaiting Reply and Completed nested under it), **Calendar**, and **Settings** at the bottom. On desktop it is a slim icon rail that widens on hover (or keyboard focus) to show labels and counts. On phones, the ☰ button slides it in as a full-screen panel. A small black square marks a section with overdue items. The motion follows [Aceternity's sidebar](https://21st.dev/@manuarora700/components/sidebar).
+- **Look:** black and white, set in Times New Roman, with rounded corners throughout, hairline dividers and a dot-grid background. Buttons show a faint outline on hover. Selected items get a rounded, very light gray background and a darker icon. Overdue dates are bold italic.
+- **Sections:** move items between To-do and Awaiting Reply with the hourglass button, `W`, or by dragging onto a section in the sidebar. Check an item off to complete it. Uncheck it in Completed to send it back where it came from.
 - **Details** (click an item): notes, due/follow-up date and time with quick presets behind a **Shortcuts** button (In 1 hour, This evening, Tomorrow, Next week), priority, repeat, and who you're waiting on.
 - **Quick add:** in Awaiting Reply, `Quote for roof @Dana` records Dana as who you're waiting on.
 - **Repeating items** stay in place with their next date when completed, and a copy is logged in Completed.
 - **Undo** for complete, move, delete, clear, and import (toast button or `⌘Z`).
 - **Search** across all sections. **Priority zones**: To-do and Awaiting Reply are split into !!! / !! / ! / None zones; fold any zone, or drag an item into another zone to change its priority. **Sort** within each zone manually (drag) or by due date.
-- **Notifications** at due time, opt-in from the ⋯ menu. All-day items alert at 9:00. The overdue count shows in the tab title and the installed app's badge. Without a push server, alerts fire only while the app or tab is open (it can be in the background).
+- **Notifications** at due time, opt-in from **Settings**. All-day items alert at 9:00. The overdue count shows in the tab title and the installed app's badge. Without a push server, alerts fire only while the app or tab is open (it can be in the background).
 - **Backup:** export and import JSON (merge or replace). Changes sync live between open tabs.
 - **Theme:** auto, light, or dark.
+- **Animated icons:** icons play a short animation when you hover or focus their button (skipped with reduced motion).
 
 ## Calendar
 
-Click **Calendar** in the header (or press `C`) to switch views. The app remembers which view you last used.
+Click **Calendar** in the sidebar (or press `C`) to switch views; its count is the number of open items due today. Click **Reminders** or a section to go back to the list. The app remembers which view you last used.
 
-- **Month grid:** To-do items show in blue and Awaiting Reply items in amber. Overdue items are red. On phones, items become dots.
+- **Month grid:** To-do items have a black edge and Awaiting Reply items a gray one. Overdue items are bold italic. On phones, items become small squares.
 - **Day agenda:** click a day to see and edit its items. On today, overdue items are listed first. The add field creates reminders on that day, and ending with `@name` makes it an Awaiting Reply item.
 - **No date** tray: open items without a date.
 - **Drag to reschedule:** drag an item onto a day to set its date (the time is kept). Drag it onto **No date** to clear the date. Each change can be undone.
-- **Show:** the **To-do** and **Awaiting** toggles hide or show each section. Search filters the calendar too. The week can start on Monday or Sunday (⋯ menu).
+- **Show:** the **To-do** and **Awaiting** toggles hide or show each section. Search filters the calendar too. The week can start on Monday or Sunday (**Settings**).
 
 ## Keyboard
 
@@ -62,5 +65,6 @@ Click **Calendar** in the header (or press `C`) to switch views. The app remembe
 - `src/actions.ts`: user-facing actions that add undo toasts
 - `src/lib/`: date helpers and repeat logic, sorting and grouping, calendar grid and agenda, backup validation
 - `src/hooks/`: notifications, keyboard shortcuts, clock, cross-tab sync, document title and theme
-- `src/components/`: UI
+- `src/components/`: UI (`Sidebar.tsx` is the navigation rail and phone panel; `Menu.tsx` is Settings)
+- `src/icons/`: animated icons from [AnimateIcons](https://animateicons.in) (Lucide set, MIT, see `src/icons/LICENSE`), found via [21st.dev](https://21st.dev/community/icons). They use `motion`. To add one, copy its file from the AnimateIcons repo, then make the same edits as the existing files: `cx` instead of `cn`, and `m.span` instead of `m.div`.
 - `public/sw-notifications.js`: handles notification clicks in the service worker

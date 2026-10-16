@@ -1,10 +1,11 @@
 import { format } from 'date-fns';
-import { Plus } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { parseCalendarAdd, parseQuickAdd } from '../actions';
+import { PlusIcon } from '../icons';
 import { parseDateKey } from '../lib/dates';
 import { expandZone, useStore, useUI } from '../store';
 import type { OpenStatus } from '../types';
+import { useIconAnimation } from './ui';
 
 const PLACEHOLDER: Record<OpenStatus, string> = {
   todo: 'Add a reminder',
@@ -16,6 +17,7 @@ type Props = { section: OpenStatus; dueDate?: undefined } | { section?: undefine
 
 export function QuickAdd({ section, dueDate }: Props) {
   const [text, setText] = useState('');
+  const { ref, triggers } = useIconAnimation();
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -33,8 +35,10 @@ export function QuickAdd({ section, dueDate }: Props) {
 
   const dayLabel = dueDate ? format(parseDateKey(dueDate), 'MMM d') : '';
   return (
-    <form className="quick-add" onSubmit={submit}>
-      <Plus size={18} aria-hidden />
+    <form className="quick-add" onSubmit={submit} {...triggers}>
+      <span className="quick-add-plus" aria-hidden>
+        <PlusIcon ref={ref} size={16} />
+      </span>
       <input
         id="quick-add"
         aria-label={

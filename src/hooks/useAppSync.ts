@@ -43,7 +43,7 @@ export function useStorageSync() {
   }, []);
 }
 
-const THEME_COLORS = { light: '#ffffff', dark: '#141416' };
+const THEME_COLORS = { light: '#ffffff', dark: '#000000' };
 
 /** Theme attribute, browser chrome color, overdue count in the title and app badge. */
 export function useDocumentState() {

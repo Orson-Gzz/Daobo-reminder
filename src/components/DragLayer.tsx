@@ -21,7 +21,7 @@ import type { Priority as PriorityLevel, Status } from '../types';
 import { ChipLabel } from './MonthGrid';
 import { Meta, Priority } from './ReminderItem';
 import { ZONE_DROP_PREFIX } from './ReminderList';
-import { TAB_DROP_PREFIX } from './Tabs';
+import { TAB_DROP_PREFIX } from './Sidebar';
 import { cx } from './ui';
 
 /** Section tabs, priority zone headers, calendar days and the No-date tray. */
